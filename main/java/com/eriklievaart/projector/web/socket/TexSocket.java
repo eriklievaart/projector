@@ -46,7 +46,7 @@ public class TexSocket implements WebSocketListener {
 
 	@Override
 	public void onWebSocketText(String message) {
-		System.out.println("Message from " + session.hashCode() + ": " + message);
+		log.trace("Message from " + session.hashCode() + ": " + message);
 		try {
 			session.getRemote().sendString(message);
 		} catch (IOException ex) {

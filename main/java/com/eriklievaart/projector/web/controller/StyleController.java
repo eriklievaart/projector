@@ -16,9 +16,6 @@ public class StyleController implements PageController {
 
 	@Override
 	public void invoke(ResponseBuilder response) throws Exception {
-		System.out.println("@@@@");
-		String css = source.get();
-		//		System.out.println(css);
 		response.setRenderer(new StringRenderer(source.get()));
 	}
 }
