@@ -1,0 +1,50 @@
+#!/bin/dash
+set -e
+set -u
+dash -n $0
+
+last=0
+
+if [ ! -f "$1" ]; then
+	echo "the $0 script can be used to monitor a file for changes and push it to the projector"
+	echo "usage:\n\t$0 [file]"
+	if [ "$1" != "" ]; then
+		echo
+		echo "*error* file '$1' does not exist!"
+	fi
+	exit 404
+fi
+
+while true
+do
+	mod=$(stat -c '%Y' $1)
+	if [ $mod -ne $last ]; then
+		curl -s 'http://localhost:8000/web/push' -X POST -d "file=$1" > /dev/null
+		echo "loaded $mod"
+	fi
+	last=$mod
+	sleep 0.1
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

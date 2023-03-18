@@ -15,6 +15,10 @@ ws.onopen = function() {
 };
 ws.onmessage = function(e){
 	document.getElementById('push').innerHTML = e.data + '';
+	script = document.querySelector('#run')
+	if(script != null) {
+		eval(script.innerHTML);
+	}
 };
 ws.onclose = function() {
 	document.getElementById('push').innerHTML = 'closed!';
