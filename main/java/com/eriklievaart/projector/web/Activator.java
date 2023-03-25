@@ -9,7 +9,8 @@ import com.eriklievaart.jl.core.api.osgi.LightningActivator;
 import com.eriklievaart.jl.core.api.page.PageSecurity;
 import com.eriklievaart.jl.core.api.websocket.WebSocketService;
 import com.eriklievaart.osgi.toolkit.api.ContextWrapper;
-import com.eriklievaart.projector.web.controller.PushController;
+import com.eriklievaart.projector.web.controller.PushBodyController;
+import com.eriklievaart.projector.web.controller.PushPathController;
 import com.eriklievaart.projector.web.controller.RootController;
 import com.eriklievaart.projector.web.controller.StyleController;
 import com.eriklievaart.projector.web.socket.PingPong;
@@ -36,7 +37,8 @@ public class Activator extends LightningActivator {
 		addPageService(builder -> {
 			builder.newRoute("root").mapGet("", () -> new RootController());
 			builder.newRoute("css").mapGet("style.css", () -> new StyleController(getCssLoader()));
-			builder.newRoute("push").mapPost("push", () -> new PushController(service));
+			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));
+			builder.newRoute("push.body").mapPost("push/body", () -> new PushBodyController(service));
 			builder.setSecurity(new PageSecurity((route, ctx) -> true));
 		});
 	}

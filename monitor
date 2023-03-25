@@ -15,13 +15,12 @@ if [ ! -f "$1" ]; then
 	exit 404
 fi
 
+set +e
 while true
 do
-	set +e
 	mod=$(stat -c '%Y' $1)
-	set -e
 	if [ "$mod" != "" -a "$mod" -ne "$last" ]; then
-		curl -s 'http://localhost:8000/web/push' -X POST -d "file=$1" > /dev/null
+		curl -s 'http://localhost:8000/web/push/path' -X POST -d "file=$1" > /dev/null
 		echo "loaded $mod"
 	fi
 	last=$mod

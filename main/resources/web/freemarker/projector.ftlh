@@ -10,15 +10,15 @@ ${body?no_esc}
 <script>
 function createSocket() {
 	if(typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-		console.log("connected: " + new Date());
+		// console.log("connected: " + new Date());
 		return;
 	}
-	console.log("connecting " + new Date());
+	// console.log("connecting " + new Date());
 	ws = new WebSocket('ws://localhost:8000/web/socket');
 
 	ws.onopen = function() {
 		document.title = 'connected!';
-		console.log('connected');
+		// console.log('connected');
 	};
 	ws.onmessage = function(e){
 		if(e.data == 'reload') {
