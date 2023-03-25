@@ -5,24 +5,34 @@
 </head>
 <body>
 
-<div id="push" ></div>
+${body?no_esc}
 
 <script>
-ws = new WebSocket('ws://localhost:8000/web/socket');
-
-ws.onopen = function() {
-	document.getElementById('push').innerHTML = 'connected!';
-};
-ws.onmessage = function(e){
-	document.getElementById('push').innerHTML = e.data + '';
-	script = document.querySelector('#run')
-	if(script != null) {
-		eval(script.innerHTML);
+function createSocket() {
+	if(typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+		console.log("connected: " + new Date());
+		return;
 	}
-};
-ws.onclose = function() {
-	document.getElementById('push').innerHTML = 'closed!';
-};
+	console.log("connecting " + new Date());
+	ws = new WebSocket('ws://localhost:8000/web/socket');
+
+	ws.onopen = function() {
+		document.title = 'connected!';
+		console.log('connected');
+	};
+	ws.onmessage = function(e){
+		if(e.data == 'reload') {
+			location.reload();
+		} else {
+			document.title = e.data + '';
+		}
+	};
+	ws.onclose = function() {
+		document.title = 'disconnected!';
+	};
+}
+createSocket();
+setInterval(createSocket, 5000);
 </script>
 
 </body>

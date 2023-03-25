@@ -17,8 +17,10 @@ fi
 
 while true
 do
+	set +e
 	mod=$(stat -c '%Y' $1)
-	if [ $mod -ne $last ]; then
+	set -e
+	if [ "$mod" != "" -a "$mod" -ne "$last" ]; then
 		curl -s 'http://localhost:8000/web/push' -X POST -d "file=$1" > /dev/null
 		echo "loaded $mod"
 	fi

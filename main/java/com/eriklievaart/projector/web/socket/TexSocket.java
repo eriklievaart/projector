@@ -22,11 +22,6 @@ public class TexSocket implements WebSocketListener {
 	public void onWebSocketConnect(Session s) {
 		this.session = s;
 		log.debug(session.hashCode() + " has opened a connection");
-		try {
-			session.getRemote().sendString("Connection Established");
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
 	}
 
 	@Override
