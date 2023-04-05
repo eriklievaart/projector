@@ -2,10 +2,11 @@
 <html>
 <head>
 	<link rel="stylesheet" media="screen" href="/web/style.css"/>
+	<link rel="icon" type="image/x-icon" href="/web/favicon.ico">
 </head>
 <body>
 
-${body?no_esc}
+<div id="error-hook"></div>
 
 <script>
 function createSocket() {
@@ -32,8 +33,17 @@ function createSocket() {
 	};
 }
 createSocket();
+
 setInterval(createSocket, 5000);
+
+window.onerror = function(msg, url, line) {
+	html = 'line:' + line + '<br/>' + msg;
+	document.getElementById('error-hook').innerHTML = html;
+}
+
 </script>
+
+${body?no_esc}
 
 </body>
 </html>

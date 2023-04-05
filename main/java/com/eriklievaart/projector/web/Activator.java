@@ -9,6 +9,7 @@ import com.eriklievaart.jl.core.api.osgi.LightningActivator;
 import com.eriklievaart.jl.core.api.page.PageSecurity;
 import com.eriklievaart.jl.core.api.websocket.WebSocketService;
 import com.eriklievaart.osgi.toolkit.api.ContextWrapper;
+import com.eriklievaart.projector.web.controller.FaviconController;
 import com.eriklievaart.projector.web.controller.PushBodyController;
 import com.eriklievaart.projector.web.controller.PushPathController;
 import com.eriklievaart.projector.web.controller.RootController;
@@ -37,6 +38,7 @@ public class Activator extends LightningActivator {
 		addPageService(builder -> {
 			builder.newRoute("root").mapGet("", () -> new RootController());
 			builder.newRoute("css").mapGet("style.css", () -> new StyleController(getCssLoader()));
+			builder.newRoute("favicon").mapGet("favicon.ico", () -> new FaviconController());
 			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));
 			builder.newRoute("push.body").mapPost("push/body", () -> new PushBodyController(service));
 			builder.setSecurity(new PageSecurity((route, ctx) -> true));

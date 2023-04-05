@@ -65,4 +65,8 @@ body {
 	font-weight: bold;
 }
 
+#error-hook {
+	font-weight: bold;
+	color:red;
+}
 
