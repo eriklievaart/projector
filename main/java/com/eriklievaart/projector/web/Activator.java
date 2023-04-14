@@ -24,10 +24,6 @@ import com.eriklievaart.toolkit.logging.api.LogTemplate;
 public class Activator extends LightningActivator {
 	private LogTemplate log = new LogTemplate(getClass());
 
-	public Activator() {
-		super("web");
-	}
-
 	@Override
 	protected void init(BundleContext context) throws Exception {
 		TexSocketService service = new TexSocketService();
