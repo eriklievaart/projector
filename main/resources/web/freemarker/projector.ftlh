@@ -43,6 +43,7 @@ window.onerror = function(msg, url, line) {
 
 </script>
 
+<script src="/web/jquery.js"></script>
 ${body?no_esc}
 
 </body>

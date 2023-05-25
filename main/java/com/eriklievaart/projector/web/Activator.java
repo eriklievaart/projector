@@ -13,7 +13,7 @@ import com.eriklievaart.projector.web.controller.FaviconController;
 import com.eriklievaart.projector.web.controller.PushBodyController;
 import com.eriklievaart.projector.web.controller.PushPathController;
 import com.eriklievaart.projector.web.controller.RootController;
-import com.eriklievaart.projector.web.controller.StyleController;
+import com.eriklievaart.projector.web.controller.SupplierController;
 import com.eriklievaart.projector.web.socket.PingPong;
 import com.eriklievaart.projector.web.socket.TexSocketService;
 import com.eriklievaart.toolkit.io.api.FileTool;
@@ -22,6 +22,7 @@ import com.eriklievaart.toolkit.lang.api.str.Str;
 import com.eriklievaart.toolkit.logging.api.LogTemplate;
 
 public class Activator extends LightningActivator {
+	private static final String JQUERY = "/web/jquery-3.7.0.js";
 	private LogTemplate log = new LogTemplate(getClass());
 
 	@Override
@@ -34,12 +35,17 @@ public class Activator extends LightningActivator {
 		addTemplateSource();
 		addPageService(builder -> {
 			builder.newRoute("root").mapGet("", () -> new RootController());
-			builder.newRoute("css").mapGet("style.css", () -> new StyleController(cssLoader));
+			builder.newRoute("css").mapGet("style.css", () -> new SupplierController(cssLoader));
 			builder.newRoute("favicon").mapGet("favicon.ico", () -> new FaviconController());
 			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));
 			builder.newRoute("push.body").mapPost("push/body", () -> new PushBodyController(service));
+			builder.newRoute("jquery").mapGet("jquery.js", () -> new SupplierController(resource(JQUERY)));
 			builder.setSecurity(new PageSecurity((route, ctx) -> true));
 		});
+	}
+
+	private Supplier<String> resource(String path) {
+		return () -> ResourceTool.getString(getClass(), path);
 	}
 
 	private Supplier<String> getCssLoader() {

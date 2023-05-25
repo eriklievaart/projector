@@ -6,11 +6,11 @@ import com.eriklievaart.jl.core.api.ResponseBuilder;
 import com.eriklievaart.jl.core.api.page.PageController;
 import com.eriklievaart.jl.core.api.render.StringRenderer;
 
-public class StyleController implements PageController {
+public class SupplierController implements PageController {
 
 	private Supplier<String> source;
 
-	public StyleController(Supplier<String> source) {
+	public SupplierController(Supplier<String> source) {
 		this.source = source;
 	}
 
