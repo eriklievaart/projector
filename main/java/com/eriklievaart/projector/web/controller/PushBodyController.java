@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.eriklievaart.jl.core.api.Bean;
 import com.eriklievaart.jl.core.api.ResponseBuilder;
 import com.eriklievaart.jl.core.api.page.PageController;
+import com.eriklievaart.jl.core.api.render.StringRenderer;
 import com.eriklievaart.projector.web.socket.TexSocketService;
 import com.eriklievaart.toolkit.io.api.StreamTool;
 
@@ -25,5 +26,6 @@ public class PushBodyController implements PageController {
 		ServletInputStream is = request.getInputStream();
 		BodyContext.setBody(StreamTool.toString(is));
 		service.push("reload");
+		response.setRenderer(new StringRenderer(""));
 	}
 }

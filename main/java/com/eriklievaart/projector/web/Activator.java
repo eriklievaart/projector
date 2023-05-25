@@ -29,11 +29,12 @@ public class Activator extends LightningActivator {
 		TexSocketService service = new TexSocketService();
 		addServiceWithCleanup(WebSocketService.class, service);
 		new Thread(new PingPong(service)).start();
+		Supplier<String> cssLoader = getCssLoader();
 
 		addTemplateSource();
 		addPageService(builder -> {
 			builder.newRoute("root").mapGet("", () -> new RootController());
-			builder.newRoute("css").mapGet("style.css", () -> new StyleController(getCssLoader()));
+			builder.newRoute("css").mapGet("style.css", () -> new StyleController(cssLoader));
 			builder.newRoute("favicon").mapGet("favicon.ico", () -> new FaviconController());
 			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));
 			builder.newRoute("push.body").mapPost("push/body", () -> new PushBodyController(service));
@@ -44,11 +45,12 @@ public class Activator extends LightningActivator {
 	private Supplier<String> getCssLoader() {
 		ContextWrapper wrapper = getContextWrapper();
 		String path = wrapper.getPropertyString("com.eriklievaart.projector.web.style.file", null);
+		log.info("configured css file: $", path);
 		if (Str.isBlank(path)) {
-			log.info("css classpath loader");
+			log.info("using css classpath loader");
 			return () -> ResourceTool.getString(getClass(), "/web/style.css");
 		}
-		log.info("css file loader: $", path);
+		log.info("using css file loader");
 		return () -> FileTool.toString(new File(path));
 	}
 }
