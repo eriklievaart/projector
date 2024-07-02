@@ -31,10 +31,11 @@ public class Activator extends LightningActivator {
 		addServiceWithCleanup(WebSocketService.class, service);
 		new Thread(new PingPong(service)).start();
 		Supplier<String> cssLoader = getCssLoader();
+		int port = getContextWrapper().getPropertyInt("org.osgi.service.http.port", 8000);
 
 		addTemplateSource();
 		addPageService(builder -> {
-			builder.newRoute("root").mapGet("", () -> new RootController());
+			builder.newRoute("root").mapGet("", () -> new RootController(port));
 			builder.newRoute("css").mapGet("style.css", () -> new SupplierController(cssLoader));
 			builder.newRoute("favicon").mapGet("favicon.ico", () -> new FaviconController());
 			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));

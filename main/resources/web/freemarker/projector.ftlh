@@ -15,7 +15,7 @@ function createSocket() {
 		return;
 	}
 	// console.log("connecting " + new Date());
-	ws = new WebSocket('ws://localhost:8000/web/socket');
+	ws = new WebSocket('ws://localhost:${port?c}/web/socket');
 
 	ws.onopen = function() {
 		document.title = 'connected!';
