@@ -47,6 +47,7 @@ table {
 
 body {
 	background-color: #544;
+	padding: 10px;
 	color: #A99;
 }
 
@@ -64,6 +65,7 @@ body {
 	font-size: 1.2em;
 	font-weight: bold;
 }
+
 
 #error-hook {
 	font-weight: bold;
