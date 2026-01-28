@@ -7,9 +7,11 @@ import org.osgi.framework.BundleContext;
 
 import com.eriklievaart.jl.core.api.osgi.LightningActivator;
 import com.eriklievaart.jl.core.api.page.PageSecurity;
+import com.eriklievaart.jl.core.api.page.PageServiceBuilder;
 import com.eriklievaart.jl.core.api.websocket.WebSocketService;
 import com.eriklievaart.osgi.toolkit.api.ContextWrapper;
 import com.eriklievaart.projector.web.controller.FaviconController;
+import com.eriklievaart.projector.web.controller.HttpController;
 import com.eriklievaart.projector.web.controller.PushBodyController;
 import com.eriklievaart.projector.web.controller.PushPathController;
 import com.eriklievaart.projector.web.controller.RootController;
@@ -18,11 +20,16 @@ import com.eriklievaart.projector.web.socket.PingPong;
 import com.eriklievaart.projector.web.socket.TexSocketService;
 import com.eriklievaart.toolkit.io.api.FileTool;
 import com.eriklievaart.toolkit.io.api.ResourceTool;
+import com.eriklievaart.toolkit.lang.api.IdGenerator;
 import com.eriklievaart.toolkit.lang.api.str.Str;
 import com.eriklievaart.toolkit.logging.api.LogTemplate;
+import com.eriklievaart.toolkit.vfs.api.VirtualFileScanner;
 
 public class Activator extends LightningActivator {
+	private static final String PROPERTY_HTTP_PORT = "org.osgi.service.http.port";
+
 	private static final String JQUERY = "/web/jquery-3.7.0.js";
+
 	private LogTemplate log = new LogTemplate(getClass());
 
 	@Override
@@ -30,19 +37,40 @@ public class Activator extends LightningActivator {
 		TexSocketService service = new TexSocketService();
 		addServiceWithCleanup(WebSocketService.class, service);
 		new Thread(new PingPong(service)).start();
-		Supplier<String> cssLoader = getCssLoader();
-		int port = getContextWrapper().getPropertyInt("org.osgi.service.http.port", 8000);
 
 		addTemplateSource();
+		createPageService(service);
+	}
+
+	private void createPageService(TexSocketService service) {
 		addPageService(builder -> {
-			builder.newRoute("root").mapGet("", () -> new RootController(port));
-			builder.newRoute("css").mapGet("style.css", () -> new SupplierController(cssLoader));
+			builder.newRoute("root").mapGet("", () -> new RootController(getHttpPort()));
+			builder.newRoute("css").mapGet("style.css", () -> new SupplierController(getCssLoader()));
 			builder.newRoute("favicon").mapGet("favicon.ico", () -> new FaviconController());
 			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));
 			builder.newRoute("push.body").mapPost("push/body", () -> new PushBodyController(service));
 			builder.newRoute("jquery").mapGet("jquery.js", () -> new SupplierController(resource(JQUERY)));
+			registerStaticResources(builder);
 			builder.setSecurity(new PageSecurity((route, ctx) -> true));
 		});
+	}
+
+	private void registerStaticResources(PageServiceBuilder builder) {
+		File dir = new File(getContextWrapper().getBundleParentDir(), "htdocs");
+		if (!dir.isDirectory()) {
+			log.info("static dir $ does not exist", dir);
+			return;
+		}
+		int skip = dir.getAbsolutePath().length();
+		IdGenerator ids = new IdGenerator();
+		for (File file : new VirtualFileScanner(dir).collectAsFileList()) {
+			String tail = file.getAbsolutePath().substring(skip);
+			builder.newRoute("htdoc" + ids.nextInt()).mapGet(tail, () -> new HttpController(file));
+		}
+	}
+
+	private int getHttpPort() {
+		return getContextWrapper().getPropertyInt(PROPERTY_HTTP_PORT, 8000);
 	}
 
 	private Supplier<String> resource(String path) {
