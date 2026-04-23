@@ -7,26 +7,26 @@ import org.osgi.framework.BundleContext;
 
 import com.eriklievaart.jl.core.api.osgi.LightningActivator;
 import com.eriklievaart.jl.core.api.page.PageSecurity;
-import com.eriklievaart.jl.core.api.page.PageServiceBuilder;
 import com.eriklievaart.jl.core.api.websocket.WebSocketService;
 import com.eriklievaart.osgi.toolkit.api.ContextWrapper;
 import com.eriklievaart.projector.web.controller.FaviconController;
-import com.eriklievaart.projector.web.controller.HttpController;
+import com.eriklievaart.projector.web.controller.Htdocs;
+import com.eriklievaart.projector.web.controller.HtdocsController;
 import com.eriklievaart.projector.web.controller.PushBodyController;
 import com.eriklievaart.projector.web.controller.PushPathController;
 import com.eriklievaart.projector.web.controller.RootController;
 import com.eriklievaart.projector.web.controller.SupplierController;
+import com.eriklievaart.projector.web.file.EditorController;
 import com.eriklievaart.projector.web.socket.PingPong;
 import com.eriklievaart.projector.web.socket.TexSocketService;
 import com.eriklievaart.toolkit.io.api.FileTool;
 import com.eriklievaart.toolkit.io.api.ResourceTool;
-import com.eriklievaart.toolkit.lang.api.IdGenerator;
 import com.eriklievaart.toolkit.lang.api.str.Str;
 import com.eriklievaart.toolkit.logging.api.LogTemplate;
-import com.eriklievaart.toolkit.vfs.api.VirtualFileScanner;
 
 public class Activator extends LightningActivator {
 	private static final String PROPERTY_HTTP_PORT = "org.osgi.service.http.port";
+	private static final String PROPERTY_FILE_PATH = "com.eriklievaart.projector.web.path";
 
 	private static final String JQUERY = "/web/jquery-3.7.0.js";
 
@@ -38,39 +38,32 @@ public class Activator extends LightningActivator {
 		addServiceWithCleanup(WebSocketService.class, service);
 		new Thread(new PingPong(service)).start();
 
+		Htdocs htdocs = new Htdocs(new File(getContextWrapper().getBundleParentDir(), "htdocs"));
+
 		addTemplateSource();
-		createPageService(service);
+		createPageService(service, htdocs);
 	}
 
-	private void createPageService(TexSocketService service) {
+	private void createPageService(TexSocketService service, Htdocs docs) {
 		addPageService(builder -> {
 			builder.newRoute("root").mapGet("", () -> new RootController(getHttpPort()));
+			builder.newRoute("edit").mapGetAndPost("edit", () -> new EditorController(getFile()));
 			builder.newRoute("css").mapGet("style.css", () -> new SupplierController(getCssLoader()));
 			builder.newRoute("favicon").mapGet("favicon.ico", () -> new FaviconController());
 			builder.newRoute("push.path").mapPost("push/path", () -> new PushPathController(service));
 			builder.newRoute("push.body").mapPost("push/body", () -> new PushBodyController(service));
 			builder.newRoute("jquery").mapGet("jquery.js", () -> new SupplierController(resource(JQUERY)));
-			registerStaticResources(builder);
+			builder.newRoute("static").mapGet("*", () -> new HtdocsController(docs));
 			builder.setSecurity(new PageSecurity((route, ctx) -> true));
 		});
 	}
 
-	private void registerStaticResources(PageServiceBuilder builder) {
-		File dir = new File(getContextWrapper().getBundleParentDir(), "htdocs");
-		if (!dir.isDirectory()) {
-			log.info("static dir $ does not exist", dir);
-			return;
-		}
-		int skip = dir.getAbsolutePath().length();
-		IdGenerator ids = new IdGenerator();
-		for (File file : new VirtualFileScanner(dir).collectAsFileList()) {
-			String tail = file.getAbsolutePath().substring(skip);
-			builder.newRoute("htdoc" + ids.nextInt()).mapGet(tail, () -> new HttpController(file));
-		}
-	}
-
 	private int getHttpPort() {
 		return getContextWrapper().getPropertyInt(PROPERTY_HTTP_PORT, 8000);
+	}
+
+	private File getFile() {
+		return new File(getContextWrapper().getPropertyString(PROPERTY_FILE_PATH, ""));
 	}
 
 	private Supplier<String> resource(String path) {
